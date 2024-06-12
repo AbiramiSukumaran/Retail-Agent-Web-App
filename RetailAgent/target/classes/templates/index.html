@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Retail Search</title>
+    <style>
+        #chatbox {
+            width: 400px;
+            height: 500px;
+            border: 1px solid #ccc;
+            overflow-y: scroll;
+            padding: 10px;
+        }
+
+        .message {
+            margin-bottom: 10px;
+        }
+
+        .user-message {
+            text-align: right;
+        }
+
+        .bot-message {
+            text-align: left;
+        }
+    </style>
+</head>
+<body onload="loadImage()">
+
+    <h2>Dialogflow Chatbot</h2>
+
+    <div id="chatbox" onload = "handleRichResponse()">
+		${response}
+        </div>
+
+<form id="formprompt" name="formprompt" action="#" th:action="@{/chat}" th:object="${prompt}" method="get">
+    <input type="text" id="userInput" th:field="*{prompt}" placeholder="Type your message...">
+	<input type="hidden" id="hiddenprompt" >
+    <input type="submit" value="Send" />
+    
+	<input type="hidden" th:value="${prompt}"  id="hiddenpromptreceive" >
+	<input id="hiddenstring" type="hidden" th:value="${response}" >
+	<input type="hidden" th:value="${address}"  id="hiddenaddress" >
+	<input type="hidden" th:value="${sessiontext}"  id="hiddensession" >
+	<input type="hidden" th:field="*{address}"  id="hiddenaddresssend" >
+	<input type="hidden" th:field="*{sessiontext}"  id="hiddensessionsend" >
+	<input type="hidden" th:field="*{response}"  id="hiddenresponsesend" >
+</form>
+
+<form id="formpromptreset" name="formpromptreset" action="#" th:action="@{/}" th:object="${prompt}" method="get">
+
+    <input type="submit" value="Reset"/>
+
+</form>
+
+    <script>
+        const chatbox = document.getElementById('chatbox');
+        const userInput = document.getElementById('userInput');
+		const hiddenprompt = document.getElementById('hiddenprompt');
+
+
+        function displayMessage(message, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', `${sender}-message`);
+            messageDiv.textContent = message;
+            chatbox.appendChild(messageDiv);
+
+            // Scroll to bottom
+            chatbox.scrollTop = chatbox.scrollHeight;
+        }
+
+		function loadImage() {
+			var resp = document.getElementById("hiddenstring").value;      
+			var addresshidden = document.getElementById("hiddenaddress").value; 
+			var sessionhidden = document.getElementById("hiddensession").value; 
+			var prompthidden = document.getElementById("hiddenpromptreceive").value; 
+			document.getElementById("hiddenaddresssend").value = addresshidden;
+			document.getElementById("hiddensessionsend").value = sessionhidden;
+			document.getElementById("hiddenresponsesend").value = resp;
+			document.getElementById("hiddenprompt").value = prompthidden;
+			document.getElementById("chatbox").textContent  = resp;
+//alert(document.getElementById("sessionhidden").value);
+	}
+
+
+    function handleRichResponse() {
+        var queryResult = document.getElementById("chatbox").textContent;
+  const chatbox = document.getElementById('chatbox');
+
+  // Assuming queryResult is the JSON response from Dialogflow
+  if (queryResult.fulfillmentText) {
+    // Display plain text
+    displayMessage(queryResult.fulfillmentText, 'bot');
+  }
+
+  if (queryResult.fulfillmentMessages) {
+    queryResult.fulfillmentMessages.forEach(message => {
+      if (message.card) {
+        // Create a card element
+        const cardDiv = document.createElement('div');
+        cardDiv.classList.add('card');
+        cardDiv.innerHTML = `
+          <h3>${message.card.title}</h3>
+          <img src="${message.card.imageUri}" alt="${message.card.title}">
+          <p>${message.card.subtitle}</p>
+        `;
+        chatbox.appendChild(cardDiv);
+      } else if (message.image) {
+        // Create an image element
+        const imageDiv = document.createElement('div');
+        imageDiv.classList.add('image');
+        imageDiv.innerHTML = `<img src="${message.image.imageUri}" alt="${message.image.imageUri}">`;
+        chatbox.appendChild(imageDiv);
+      } else if (message.quickReplies) {
+        // Create quick reply buttons
+        const quickRepliesDiv = document.createElement('div');
+        quickRepliesDiv.classList.add('quick-replies');
+        message.quickReplies.quickReplies.forEach(reply => {
+          const button = document.createElement('button');
+          button.textContent = reply.text;
+          quickRepliesDiv.appendChild(button);
+        });
+        chatbox.appendChild(quickRepliesDiv);
+      }
+    });
+  }
+}
+
+    </script>
+
+</body>
+</html>
