@@ -23,7 +23,7 @@ def hello_get(request):
 
 def run_sample(project_id, location_id, agent_id, texts, language_code):
     session_id = texts[0].split(":_+_:")[0];
-    return detect_intent_texts(agent, session_id, texts, language_code)
+    return detect_intent_texts(agent_id, session_id, texts, language_code)
 
 
 def detect_intent_texts(agent, session_id, texts, language_code):
